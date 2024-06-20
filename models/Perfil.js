@@ -23,6 +23,11 @@ const getPerfilById = async (id) => {
   return rows[0];
 };
 
+const getAllPerfis = async () => {
+  const { rows } = await pool.query("SELECT * FROM Perfil");
+  return rows;
+};
+
 const createPerfil = async (nome_perfil, descricao, id_usuario) => {
   const { rows } = await pool.query(
     "INSERT INTO Perfil (nome_perfil, descricao, id_usuario) VALUES ($1, $2, $3) RETURNING *",
@@ -43,4 +48,33 @@ const deletePerfil = async (id) => {
   await pool.query("DELETE FROM Perfil WHERE id_perfil = $1", [id]);
 };
 
-module.exports = { getPerfilById, createPerfil, updatePerfil, deletePerfil };
+const getProfileWithModules = async (id) => {
+  const { rows: profileRows } = await pool.query(
+    `SELECT p.id_perfil, p.nome_perfil, p.descricao 
+     FROM Perfil p 
+     WHERE p.id_perfil = $1`,
+    [id]
+  );
+
+  const { rows: moduleRows } = await pool.query(
+    `SELECT m.id_modulo, m.nome_modulo, m.descricao 
+     FROM PerfilModulo pm 
+     JOIN Modulo m ON pm.id_modulo = m.id_modulo 
+     WHERE pm.id_perfil = $1`,
+    [id]
+  );
+
+  return {
+    profile: profileRows[0],
+    modules: moduleRows,
+  };
+};
+
+module.exports = {
+  getPerfilById,
+  getAllPerfis,
+  createPerfil,
+  updatePerfil,
+  deletePerfil,
+  getProfileWithModules,
+};

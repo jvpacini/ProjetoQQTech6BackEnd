@@ -4,6 +4,7 @@ const {
   createUsuario,
   updateUsuario,
   deleteUsuario,
+  getUserWithProfile,
 } = require("../models/Usuario");
 
 const getUsuario = async (req, res) => {
@@ -68,10 +69,20 @@ const removeUsuario = async (req, res) => {
   }
 };
 
+const getUserProfile = async (req, res) => {
+  try {
+    const userProfile = await getUserWithProfile(req.params.id);
+    res.status(200).json(userProfile);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getUsuario,
   getUsuarios,
   addUsuario,
   editUsuario,
   removeUsuario,
+  getUserProfile,
 };

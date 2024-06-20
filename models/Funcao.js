@@ -22,6 +22,11 @@ const getFuncaoById = async (id) => {
   return rows[0];
 };
 
+const getAllFuncoes = async () => {
+  const { rows } = await pool.query("SELECT * FROM Funcao");
+  return rows;
+};
+
 const createFuncao = async (codigo_funcao, nome_funcao, descricao) => {
   const { rows } = await pool.query(
     "INSERT INTO Funcao (codigo_funcao, nome_funcao, descricao) VALUES ($1, $2, $3) RETURNING *",
@@ -42,4 +47,10 @@ const deleteFuncao = async (id) => {
   await pool.query("DELETE FROM Funcao WHERE id_funcao = $1", [id]);
 };
 
-module.exports = { getFuncaoById, createFuncao, updateFuncao, deleteFuncao };
+module.exports = {
+  getFuncaoById,
+  getAllFuncoes,
+  createFuncao,
+  updateFuncao,
+  deleteFuncao,
+};

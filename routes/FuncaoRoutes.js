@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   getFuncao,
+  getFuncoes,
   addFuncao,
   editFuncao,
   removeFuncao,
@@ -9,6 +10,7 @@ const {
 const router = express.Router();
 
 router.get("/funcoes/:id", getFuncao);
+router.get("/funcoes", getFuncoes);
 router.post("/funcoes", addFuncao);
 router.put("/funcoes/:id", editFuncao);
 router.delete("/funcoes/:id", removeFuncao);

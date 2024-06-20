@@ -43,7 +43,6 @@ const updateUsuario = async (
   email,
   senha
 ) => {
-  // Check if the new codigo_usuario already exists for another user
   const checkQuery =
     "SELECT id_usuario FROM Usuario WHERE codigo_usuario = $1 AND id_usuario != $2";
   const { rowCount } = await pool.query(checkQuery, [codigo_usuario, id]);
@@ -63,10 +62,22 @@ const deleteUsuario = async (id) => {
   await pool.query("DELETE FROM Usuario WHERE id_usuario = $1", [id]);
 };
 
+const getUserWithProfile = async (id) => {
+  const { rows } = await pool.query(
+    `SELECT u.id_usuario, u.nome_completo, u.email, p.nome_perfil 
+     FROM Usuario u 
+     LEFT JOIN Perfil p ON u.id_perfil = p.id_perfil 
+     WHERE u.id_usuario = $1`,
+    [id]
+  );
+  return rows[0];
+};
+
 module.exports = {
   getUsuarioById,
   getAllUsuarios,
   createUsuario,
   updateUsuario,
   deleteUsuario,
+  getUserWithProfile,
 };

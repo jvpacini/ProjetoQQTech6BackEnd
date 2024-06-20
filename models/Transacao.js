@@ -22,6 +22,11 @@ const getTransacaoById = async (id) => {
   return rows[0];
 };
 
+const getAllTransacoes = async () => {
+  const { rows } = await pool.query("SELECT * FROM Transacao");
+  return rows;
+};
+
 const createTransacao = async (codigo_transacao, nome_transacao, descricao) => {
   const { rows } = await pool.query(
     "INSERT INTO Transacao (codigo_transacao, nome_transacao, descricao) VALUES ($1, $2, $3) RETURNING *",
@@ -49,6 +54,7 @@ const deleteTransacao = async (id) => {
 
 module.exports = {
   getTransacaoById,
+  getAllTransacoes,
   createTransacao,
   updateTransacao,
   deleteTransacao,
