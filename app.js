@@ -18,7 +18,7 @@ app.use("/api", transacaoRoutes);
 app.use("/api", funcaoRoutes);
 app.use("/api", perfilModulosRoutes);
 app.use("/api", moduloFuncoesRoutes);
-app.use("/api", moduloTransacaoRoutes);
+app.use("/api", moduloTransacaoRoutes);t
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
