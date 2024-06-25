@@ -5,7 +5,11 @@ const {
   updateUsuario,
   deleteUsuario,
   getUserWithProfile,
+  getUserByEmail,
 } = require("../models/Usuario");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const { validationResult } = require("express-validator");
 
 const getUsuario = async (req, res) => {
   try {
@@ -26,8 +30,14 @@ const getUsuarios = async (req, res) => {
 };
 
 const addUsuario = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { codigo_usuario, nome_completo, email, senha } = req.body;
+
   try {
-    const { codigo_usuario, nome_completo, email, senha } = req.body;
     const newUsuario = await createUsuario(
       codigo_usuario,
       nome_completo,
@@ -78,6 +88,36 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+const loginUser = async (req, res) => {
+  const { email, senha } = req.body;
+  try {
+    const user = await getUserByEmail(email);
+    if (!user) {
+      return res.status(400).json({ errors: [{ msg: "Invalid credentials" }] });
+    }
+    const isMatch = await bcrypt.compare(senha, user.senha);
+    if (!isMatch) {
+      return res.status(400).json({ errors: [{ msg: "Invalid credentials" }] });
+    }
+    const payload = {
+      user: {
+        id: user.id_usuario,
+      },
+    };
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET, // Ensure this is the correct secret
+      { expiresIn: 3600 },
+      (err, token) => {
+        if (err) throw err;
+        res.json({ token });
+      }
+    );
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getUsuario,
   getUsuarios,
@@ -85,4 +125,5 @@ module.exports = {
   editUsuario,
   removeUsuario,
   getUserProfile,
+  loginUser,
 };

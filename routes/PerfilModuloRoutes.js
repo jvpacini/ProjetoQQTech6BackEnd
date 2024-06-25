@@ -6,6 +6,7 @@ const {
   editPerfilModulo,
   removePerfilModulo,
 } = require("../controllers/PerfilModuloController");
+const auth = require("../middleware/authMiddleware");
 
 const router = express.Router();
 

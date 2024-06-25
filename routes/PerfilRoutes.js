@@ -7,6 +7,7 @@ const {
   removePerfil,
   getProfileModules,
 } = require("../controllers/PerfilController");
+const auth = require("../middleware/authMiddleware");
 
 const router = express.Router();
 

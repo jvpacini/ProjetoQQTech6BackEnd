@@ -1,4 +1,5 @@
 const pool = require("../config/db");
+const bcrypt = require("bcryptjs");
 
 const createUsuarioTable = `
     CREATE TABLE IF NOT EXISTS Usuario (
@@ -6,7 +7,8 @@ const createUsuarioTable = `
         codigo_usuario INTEGER UNIQUE,
         nome_completo VARCHAR(255),
         email VARCHAR(50) UNIQUE,
-        senha VARCHAR(255)
+        senha VARCHAR(255),
+        id_perfil INTEGER REFERENCES perfil(id_perfil) ON DELETE SET NULL
     );
 `;
 
@@ -28,10 +30,19 @@ const getAllUsuarios = async () => {
   return rows;
 };
 
-const createUsuario = async (codigo_usuario, nome_completo, email, senha) => {
+const createUsuario = async (
+  codigo_usuario,
+  nome_completo,
+  email,
+  senha,
+  id_perfil = null
+) => {
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(senha, salt);
+
   const { rows } = await pool.query(
-    "INSERT INTO Usuario (codigo_usuario, nome_completo, email, senha) VALUES ($1, $2, $3, $4) RETURNING *",
-    [codigo_usuario, nome_completo, email, senha]
+    "INSERT INTO Usuario (codigo_usuario, nome_completo, email, senha, id_perfil) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+    [codigo_usuario, nome_completo, email, hashedPassword, id_perfil]
   );
   return rows[0];
 };
@@ -41,8 +52,12 @@ const updateUsuario = async (
   codigo_usuario,
   nome_completo,
   email,
-  senha
+  senha,
+  id_perfil = null
 ) => {
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(senha, salt);
+
   const checkQuery =
     "SELECT id_usuario FROM Usuario WHERE codigo_usuario = $1 AND id_usuario != $2";
   const { rowCount } = await pool.query(checkQuery, [codigo_usuario, id]);
@@ -52,8 +67,8 @@ const updateUsuario = async (
   }
 
   const { rows } = await pool.query(
-    "UPDATE Usuario SET codigo_usuario = $1, nome_completo = $2, email = $3, senha = $4 WHERE id_usuario = $5 RETURNING *",
-    [codigo_usuario, nome_completo, email, senha, id]
+    "UPDATE Usuario SET codigo_usuario = $1, nome_completo = $2, email = $3, senha = $4, id_perfil = $5 WHERE id_usuario = $6 RETURNING *",
+    [codigo_usuario, nome_completo, email, hashedPassword, id_perfil, id]
   );
   return rows[0];
 };
@@ -73,6 +88,13 @@ const getUserWithProfile = async (id) => {
   return rows[0];
 };
 
+const getUserByEmail = async (email) => {
+  const { rows } = await pool.query("SELECT * FROM Usuario WHERE email = $1", [
+    email,
+  ]);
+  return rows[0];
+};
+
 module.exports = {
   getUsuarioById,
   getAllUsuarios,
@@ -80,4 +102,5 @@ module.exports = {
   updateUsuario,
   deleteUsuario,
   getUserWithProfile,
+  getUserByEmail,
 };

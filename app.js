@@ -1,3 +1,4 @@
+require("dotenv").config(); // Load environment variables
 const express = require("express");
 const usuarioRoutes = require("./routes/UsuarioRoutes");
 const perfilRoutes = require("./routes/PerfilRoutes");
@@ -18,7 +19,7 @@ app.use("/api", transacaoRoutes);
 app.use("/api", funcaoRoutes);
 app.use("/api", perfilModulosRoutes);
 app.use("/api", moduloFuncoesRoutes);
-app.use("/api", moduloTransacaoRoutes);t
+app.use("/api", moduloTransacaoRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

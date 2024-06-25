@@ -6,6 +6,7 @@ const {
   editModuloFuncao,
   removeModuloFuncao,
 } = require("../controllers/ModuloFuncaoController");
+const auth = require("../middleware/authMiddleware");
 
 const router = express.Router();
 

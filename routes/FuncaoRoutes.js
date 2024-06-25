@@ -6,13 +6,14 @@ const {
   editFuncao,
   removeFuncao,
 } = require("../controllers/FuncaoController");
+const auth = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.get("/funcoes/:id", getFuncao);
-router.get("/funcoes", getFuncoes);
-router.post("/funcoes", addFuncao);
-router.put("/funcoes/:id", editFuncao);
-router.delete("/funcoes/:id", removeFuncao);
+router.get("/funcoes/:id", auth, getFuncao);
+router.get("/funcoes", auth, getFuncoes);
+router.post("/funcoes", auth, addFuncao);
+router.put("/funcoes/:id", auth, editFuncao);
+router.delete("/funcoes/:id", auth, removeFuncao);
 
 module.exports = router;
