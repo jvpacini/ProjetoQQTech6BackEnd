@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, url_for
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 import os
 import bcrypt
 from dotenv import load_dotenv
@@ -10,6 +11,7 @@ from sqlalchemy.sql import text
 load_dotenv()  # Load .env file
 
 app = Flask(__name__)
+CORS(app)
 
 # Configuration for Flask-Mail
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
