@@ -57,6 +57,11 @@ def send_recovery_email():
     if not email:
         return jsonify({'error': 'Email address is required'}), 400
 
+    # Check if the email exists in the database
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({'error': 'Email address not found'}), 404
+
     # Generate a unique token
     token = serializer.dumps(email, salt='password-recovery-salt')
 
@@ -64,9 +69,9 @@ def send_recovery_email():
     recovery_url = url_for('recover_password', token=token, _external=True)
 
     # Create a password recovery email message
-    msg = Message('Password Recovery',
+    msg = Message('Redefinição de senha',
                   recipients=[email])
-    msg.body = f'Click the link to recover your password: {recovery_url}'
+    msg.body = f'Clique o link ao lado para redefinir sua senha: {recovery_url}'
 
     try:
         mail.send(msg)
