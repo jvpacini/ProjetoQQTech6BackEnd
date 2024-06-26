@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 import os
 import bcrypt
 from dotenv import load_dotenv
+from sqlalchemy.sql import text
 
 load_dotenv()  # Load .env file
 
@@ -23,6 +24,9 @@ app.config['MAIL_DEFAULT_SENDER'] = os.getenv('EMAIL')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# Secret key for signing tokens
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+
 mail = Mail(app)
 db = SQLAlchemy(app)
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -30,16 +34,20 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 # Log to ensure database connection
 try:
     with app.app_context():
-        db.session.execute('SELECT 1')
+        db.session.execute(text('SELECT 1'))
     print("Database connection successful")
 except Exception as e:
     print(f"Database connection failed: {e}")
 
 # User model
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(128), nullable=False)
+    __tablename__ = 'usuario'
+    id = db.Column('id_usuario', db.Integer, primary_key=True)
+    codigo_usuario = db.Column(db.Integer, unique=True)
+    nome_completo = db.Column(db.String(255))
+    email = db.Column(db.String(50), unique=True, nullable=False)
+    senha = db.Column(db.String(255), nullable=False)
+    id_perfil = db.Column(db.Integer)
 
 @app.route('/send-recovery-email', methods=['POST'])
 def send_recovery_email():
@@ -85,7 +93,7 @@ def recover_password(token):
                 return jsonify({'error': 'Password is required'}), 400
 
             hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
-            user.password = hashed_password.decode('utf-8')
+            user.senha = hashed_password.decode('utf-8')
             db.session.commit()
             return jsonify({'message': 'Password updated successfully'}), 200
 
@@ -99,7 +107,7 @@ def login():
     password = data.get('password')
 
     user = User.query.filter_by(email=email).first()
-    if user and bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+    if user and bcrypt.checkpw(password.encode('utf-8'), user.senha.encode('utf-8')):
         return jsonify({'message': 'Login successful'}), 200
     else:
         return jsonify({'error': 'Invalid credentials'}), 401

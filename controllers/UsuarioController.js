@@ -35,14 +35,15 @@ const addUsuario = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { codigo_usuario, nome_completo, email, senha } = req.body;
+  const { codigo_usuario, nome_completo, email, senha, id_perfil } = req.body;
 
   try {
     const newUsuario = await createUsuario(
       codigo_usuario,
       nome_completo,
       email,
-      senha
+      senha,
+      id_perfil
     );
     res.status(201).json(newUsuario);
   } catch (error) {
@@ -52,13 +53,14 @@ const addUsuario = async (req, res) => {
 
 const editUsuario = async (req, res) => {
   try {
-    const { codigo_usuario, nome_completo, email, senha } = req.body;
+    const { codigo_usuario, nome_completo, email, senha, id_perfil } = req.body;
     const updatedUsuario = await updateUsuario(
       req.params.id,
       codigo_usuario,
       nome_completo,
       email,
-      senha
+      senha,
+      id_perfil
     );
     res.status(200).json(updatedUsuario);
   } catch (error) {
@@ -106,7 +108,7 @@ const loginUser = async (req, res) => {
     };
     jwt.sign(
       payload,
-      process.env.JWT_SECRET, // Ensure this is the correct secret
+      process.env.JWT_SECRET,
       { expiresIn: 3600 },
       (err, token) => {
         if (err) throw err;
