@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "node app",
+    "test": "concurrently --kill-others \"npm run dev\" \"npm run dev-python\"",
     "dev": "node --watch app",
     "dev-python": "python C:/Users/jvpacini/Documents/QueroQuero/backend/ProjetoQQTech6BackEnd/message_app/app.py"
   },
