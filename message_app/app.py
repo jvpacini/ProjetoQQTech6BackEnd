@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, url_for
+from flask import Flask, request, jsonify, redirect, url_for
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 from flask_sqlalchemy import SQLAlchemy
@@ -85,25 +85,23 @@ def send_recovery_email():
 def recover_password(token):
     try:
         email = serializer.loads(token, salt='password-recovery-salt', max_age=3600)
-        user = User.query.filter_by(email=email).first()
-
         if request.method == 'GET':
+            return redirect(f'http://localhost:5173/recover-password/{token}')
+        
+        if request.method == 'PUT':
+            user = User.query.filter_by(email=email).first()
             if user:
-                return jsonify({'message': f'Reset password for {email}'}), 200
+                data = request.json
+                new_password = data.get('password')
+                if not new_password:
+                    return jsonify({'error': 'Password is required'}), 400
+
+                hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+                user.senha = hashed_password.decode('utf-8')
+                db.session.commit()
+                return jsonify({'message': 'Password updated successfully'}), 200
             else:
                 return jsonify({'error': 'User not found'}), 404
-
-        if request.method == 'PUT':
-            data = request.json
-            new_password = data.get('password')
-            if not new_password:
-                return jsonify({'error': 'Password is required'}), 400
-
-            hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
-            user.senha = hashed_password.decode('utf-8')
-            db.session.commit()
-            return jsonify({'message': 'Password updated successfully'}), 200
-
     except Exception as e:
         return jsonify({'error': 'The token is invalid or has expired'}), 400
 
