@@ -105,7 +105,7 @@ def recover_password(token):
     except Exception as e:
         return jsonify({'error': 'The token is invalid or has expired'}), 400
 
-@app.route('/login', methods=['POST'])
+@app.route('/login-recovery', methods=['POST'])
 def login():
     data = request.json
     email = data.get('email')

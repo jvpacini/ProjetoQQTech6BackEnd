@@ -17,5 +17,6 @@ router.post("/perfis", addPerfil);
 router.put("/perfis/:id", editPerfil);
 router.delete("/perfis/:id", removePerfil);
 router.get("/perfis/:id/modules", getProfileModules);
+//colocar rota put pra atualizar perfil e relacionamentos de uma só vez
 
 module.exports = router;

@@ -4,9 +4,7 @@ const createPerfilTable = `
     CREATE TABLE IF NOT EXISTS Perfil (
         id_perfil SERIAL PRIMARY KEY,
         nome_perfil VARCHAR(50) UNIQUE,
-        descricao VARCHAR(255),
-        id_usuario INTEGER UNIQUE,
-        FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario)
+        descricao VARCHAR(255)
     );
 `;
 
@@ -28,18 +26,18 @@ const getAllPerfis = async () => {
   return rows;
 };
 
-const createPerfil = async (nome_perfil, descricao, id_usuario) => {
+const createPerfil = async (nome_perfil, descricao) => {
   const { rows } = await pool.query(
-    "INSERT INTO Perfil (nome_perfil, descricao, id_usuario) VALUES ($1, $2, $3) RETURNING *",
-    [nome_perfil, descricao, id_usuario]
+    "INSERT INTO Perfil (nome_perfil, descricao) VALUES ($1, $2) RETURNING *",
+    [nome_perfil, descricao]
   );
   return rows[0];
 };
 
-const updatePerfil = async (id, nome_perfil, descricao, id_usuario) => {
+const updatePerfil = async (id, nome_perfil, descricao) => {
   const { rows } = await pool.query(
-    "UPDATE Perfil SET nome_perfil = $1, descricao = $2, id_usuario = $3 WHERE id_perfil = $4 RETURNING *",
-    [nome_perfil, descricao, id_usuario, id]
+    "UPDATE Perfil SET nome_perfil = $1, descricao = $2 WHERE id_perfil = $3 RETURNING *",
+    [nome_perfil, descricao, id]
   );
   return rows[0];
 };
@@ -57,7 +55,7 @@ const getProfileWithModules = async (id) => {
   );
 
   const { rows: moduleRows } = await pool.query(
-    `SELECT m.id_modulo, m.nome_modulo, m.descricao 
+    `SELECT m.id_modulo, m.nome_modulo, m.descricao, m.codigo_modulo, pm.id_perfil_modulo
      FROM PerfilModulo pm 
      JOIN Modulo m ON pm.id_modulo = m.id_modulo 
      WHERE pm.id_perfil = $1`,

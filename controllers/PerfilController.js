@@ -27,8 +27,8 @@ const getPerfis = async (req, res) => {
 
 const addPerfil = async (req, res) => {
   try {
-    const { nome_perfil, descricao, id_usuario } = req.body;
-    const newPerfil = await createPerfil(nome_perfil, descricao, id_usuario);
+    const { nome_perfil, descricao } = req.body;
+    const newPerfil = await createPerfil(nome_perfil, descricao);
     res.status(201).json(newPerfil);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -37,12 +37,11 @@ const addPerfil = async (req, res) => {
 
 const editPerfil = async (req, res) => {
   try {
-    const { nome_perfil, descricao, id_usuario } = req.body;
+    const { nome_perfil, descricao } = req.body;
     const updatedPerfil = await updatePerfil(
       req.params.id,
       nome_perfil,
-      descricao,
-      id_usuario
+      descricao
     );
     res.status(200).json(updatedPerfil);
   } catch (error) {
