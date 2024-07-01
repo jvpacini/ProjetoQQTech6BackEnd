@@ -29,9 +29,9 @@ const getPerfilModuloById = async (id) => {
   return rows[0];
 };
 
-const createPerfilModulo = async (id_perfil, id_modulo) => {
+const createPerfilModulo = async (id_perfil, id_modulo, client = pool) => {
   try {
-    const { rows } = await pool.query(
+    const { rows } = await client.query(
       "INSERT INTO PerfilModulo (id_perfil, id_modulo) VALUES ($1, $2) RETURNING *",
       [id_perfil, id_modulo]
     );
@@ -59,10 +59,15 @@ const deletePerfilModulo = async (id) => {
   ]);
 };
 
+const deletePerfilModuloByPerfilId = async (id_perfil) => {
+  await pool.query("DELETE FROM PerfilModulo WHERE id_perfil = $1", [id_perfil]);
+};
+
 module.exports = {
   getAllPerfilModulos,
   getPerfilModuloById,
   createPerfilModulo,
   updatePerfilModulo,
   deletePerfilModulo,
+  deletePerfilModuloByPerfilId,
 };
