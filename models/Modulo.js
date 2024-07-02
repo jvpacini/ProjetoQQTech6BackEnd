@@ -47,35 +47,35 @@ const deleteModulo = async (id) => {
   await pool.query("DELETE FROM Modulo WHERE id_modulo = $1", [id]);
 };
 
-const getModuleWithDetails = async (id) => {
+const getModulesWithDetails = async () => {
   const { rows: moduleRows } = await pool.query(
-    `SELECT m.id_modulo, m.nome_modulo, m.descricao 
-     FROM Modulo m 
-     WHERE m.id_modulo = $1`,
-    [id]
+    `SELECT m.id_modulo, m.codigo_modulo, m.nome_modulo, m.descricao 
+     FROM Modulo m`
   );
 
   const { rows: funcaoRows } = await pool.query(
-    `SELECT f.nome_funcao 
+    `SELECT mf.id_modulo, f.id_funcao, f.codigo_funcao 
      FROM ModuloFuncao mf 
-     JOIN Funcao f ON mf.id_funcao = f.id_funcao 
-     WHERE mf.id_modulo = $1`,
-    [id]
+     JOIN Funcao f ON mf.id_funcao = f.id_funcao`
   );
 
   const { rows: transacaoRows } = await pool.query(
-    `SELECT t.nome_transacao 
+    `SELECT mt.id_modulo, t.id_transacao, t.codigo_transacao 
      FROM ModuloTransacao mt 
-     JOIN Transacao t ON mt.id_transacao = t.id_transacao 
-     WHERE mt.id_modulo = $1`,
-    [id]
+     JOIN Transacao t ON mt.id_transacao = t.id_transacao`
   );
 
-  return {
-    module: moduleRows[0],
-    funcoes: funcaoRows,
-    transacoes: transacaoRows,
-  };
+  const modulesWithDetails = moduleRows.map(module => {
+    const funcoes = funcaoRows.filter(funcao => funcao.id_modulo === module.id_modulo);
+    const transacoes = transacaoRows.filter(transacao => transacao.id_modulo === module.id_modulo);
+    return {
+      ...module,
+      funcoes: funcoes.map(f => ({ id_funcao: f.id_funcao, codigo_funcao: f.codigo_funcao })),
+      transacoes: transacoes.map(t => ({ id_transacao: t.id_transacao, codigo_transacao: t.codigo_transacao }))
+    };
+  });
+
+  return modulesWithDetails;
 };
 
 module.exports = {
@@ -84,5 +84,5 @@ module.exports = {
   createModulo,
   updateModulo,
   deleteModulo,
-  getModuleWithDetails,
+  getModulesWithDetails,
 };

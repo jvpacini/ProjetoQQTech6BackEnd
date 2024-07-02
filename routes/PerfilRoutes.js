@@ -8,6 +8,7 @@ const {
   removePerfilWithAssociations,
   getProfileModules,
   addPerfilWithModules,
+  editPerfilWithAssociations,
 } = require("../controllers/PerfilController");
 const auth = require("../middleware/authMiddleware");
 
@@ -21,5 +22,6 @@ router.put("/perfis/:id", editPerfil);
 router.delete("/perfis/:id", removePerfil);
 router.delete("/perfis/:id/associations", removePerfilWithAssociations);
 router.get("/perfis/:id/modules", getProfileModules);
+router.put("/:id/with-modules", editPerfilWithAssociations);
 
 module.exports = router;

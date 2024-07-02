@@ -103,6 +103,37 @@ const addPerfilWithModules = async (req, res) => {
   }
 };
 
+const editPerfilWithAssociations = async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { nome_perfil, descricao, moduloIds } = req.body;
+    const perfilId = req.params.id;
+
+    await client.query("BEGIN");
+
+    const updatedPerfil = await updatePerfil(
+      perfilId,
+      nome_perfil,
+      descricao,
+      client
+    );
+
+    await deletePerfilModuloByPerfilId(perfilId, client);
+
+    for (const moduloId of moduloIds) {
+      await createPerfilModulo(perfilId, moduloId, client);
+    }
+
+    await client.query("COMMIT");
+    res.status(200).json(updatedPerfil);
+  } catch (error) {
+    await client.query("ROLLBACK");
+    res.status(500).json({ error: error.message });
+  } finally {
+    client.release();
+  }
+};
+
 module.exports = {
   getPerfil,
   getPerfis,
@@ -112,4 +143,5 @@ module.exports = {
   removePerfilWithAssociations,
   getProfileModules,
   addPerfilWithModules,
+  editPerfilWithAssociations,
 };
