@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, redirect, url_for
+from flask import Flask, request, jsonify, redirect, url_for, send_file
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 from flask_sqlalchemy import SQLAlchemy
@@ -7,6 +7,8 @@ import os
 import bcrypt
 from dotenv import load_dotenv
 from sqlalchemy.sql import text
+import csv
+import io
 
 load_dotenv()  # Load .env file
 
@@ -50,7 +52,107 @@ class User(db.Model):
     email = db.Column(db.String(50), unique=True, nullable=False)
     senha = db.Column(db.String(255), nullable=False)
     id_perfil = db.Column(db.Integer)
+    
+@app.route('/generate-csv', methods=['GET'])
+def generate_csv():
+    try:
+        output = io.StringIO()
+        writer = csv.writer(output, quoting=csv.QUOTE_NONNUMERIC)
+        
+        queries = {
+            'Usuários': '''
+                SELECT 
+                    u.id_usuario, u.codigo_usuario, u.nome_completo, u.email, p.nome_perfil, p.descricao AS descricao_perfil
+                FROM 
+                    Usuario u
+                LEFT JOIN 
+                    Perfil p ON u.id_perfil = p.id_perfil;
+            ''',
+            'Perfis': '''
+                SELECT 
+                    id_perfil, nome_perfil, descricao 
+                FROM 
+                    Perfil;
+            ''',
+            'Módulos': '''
+                SELECT 
+                    id_modulo, codigo_modulo, nome_modulo, descricao 
+                FROM 
+                    Modulo;
+            ''',
+            'Funções': '''
+                SELECT 
+                    id_funcao, codigo_funcao, nome_funcao, descricao 
+                FROM 
+                    Funcao;
+            ''',
+            'Transações': '''
+                SELECT 
+                    id_transacao, codigo_transacao, nome_transacao, descricao 
+                FROM 
+                    Transacao;
+            ''',
+            'Associações entre módulos funções e transações': '''
+                SELECT 
+                    m.id_modulo, m.codigo_modulo, m.nome_modulo, m.descricao AS descricao_modulo,
+                    f.id_funcao, f.codigo_funcao, f.nome_funcao, f.descricao AS descricao_funcao,
+                    NULL AS id_transacao, NULL AS codigo_transacao, NULL AS nome_transacao, NULL AS descricao_transacao
+                FROM 
+                    Modulo m
+                LEFT JOIN 
+                    ModuloFuncao mf ON m.id_modulo = mf.id_modulo
+                LEFT JOIN 
+                    Funcao f ON mf.id_funcao = f.id_funcao
 
+                UNION ALL
+
+                SELECT 
+                    m.id_modulo, m.codigo_modulo, m.nome_modulo, m.descricao AS descricao_modulo,
+                    NULL AS id_funcao, NULL AS codigo_funcao, NULL AS nome_funcao, NULL AS descricao_funcao,
+                    t.id_transacao, t.codigo_transacao, t.nome_transacao, t.descricao AS descricao_transacao
+                FROM 
+                    Modulo m
+                LEFT JOIN 
+                    ModuloTransacao mt ON m.id_modulo = mt.id_modulo
+                LEFT JOIN 
+                    Transacao t ON mt.id_transacao = t.id_transacao;
+            '''
+        }
+
+        sections = ['Usuários', 'Perfis', 'Módulos', 'Funções', 'Transações', 'Associações entre módulos funções e transações']
+        
+        for section in sections:
+            query = queries[section]
+            print(f"Executing query for table: {section}")
+            writer.writerow([f'{section}'])
+            try:
+                result = db.session.execute(text(query))
+                columns = result.keys()
+                writer.writerow(columns)  # write headers
+
+                rows = result.fetchall()
+                if not rows:
+                    print(f"No data found for table: {section}")
+                else:
+                    print(f"Found data for table: {section}, writing to CSV")
+                    for row in rows:
+                        writer.writerow([x if x is not None else '----------------' for x in row])
+                writer.writerow([])  # empty line for separation
+            except Exception as query_error:
+                print(f"Error executing query for table {section}: {query_error}")
+
+        output.seek(0)
+        return send_file(
+            io.BytesIO(output.getvalue().encode('utf-8')),
+            mimetype='text/csv',
+            download_name='database_contents.csv',
+            as_attachment=True
+        )
+    
+    except Exception as e:
+        print(f"Error in generate_csv: {e}")
+        return jsonify({'error': str(e)}), 500
+    
 @app.route('/send-recovery-email', methods=['POST'])
 def send_recovery_email():
     data = request.json
