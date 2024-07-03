@@ -128,7 +128,7 @@ def generate_csv():
             try:
                 result = db.session.execute(text(query))
                 columns = result.keys()
-                writer.writerow(columns)  # write headers
+                writer.writerow(columns) 
 
                 rows = result.fetchall()
                 if not rows:
@@ -137,7 +137,7 @@ def generate_csv():
                     print(f"Found data for table: {section}, writing to CSV")
                     for row in rows:
                         writer.writerow([x if x is not None else '----------------' for x in row])
-                writer.writerow([])  # empty line for separation
+                writer.writerow([])  
             except Exception as query_error:
                 print(f"Error executing query for table {section}: {query_error}")
 
