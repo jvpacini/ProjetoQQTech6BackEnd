@@ -77,7 +77,7 @@ def send_recovery_email():
 
     try:
         mail.send(msg)
-        return jsonify({'message': 'Password recovery email sent successfully'}), 200
+        return jsonify({'message': 'E-mail de recuperação enviado com sucesso'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -99,7 +99,7 @@ def recover_password(token):
                 hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
                 user.senha = hashed_password.decode('utf-8')
                 db.session.commit()
-                return jsonify({'message': 'Password updated successfully'}), 200
+                return jsonify({'message': ''}), 200
             else:
                 return jsonify({'error': 'User not found'}), 404
     except Exception as e:

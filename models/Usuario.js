@@ -52,11 +52,8 @@ const updateUsuario = async (
   codigo_usuario,
   nome_completo,
   email,
-  senha,
   id_perfil = null
 ) => {
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(senha, salt);
 
   const checkQuery =
     "SELECT id_usuario FROM Usuario WHERE codigo_usuario = $1 AND id_usuario != $2";
@@ -67,8 +64,8 @@ const updateUsuario = async (
   }
 
   const { rows } = await pool.query(
-    "UPDATE Usuario SET codigo_usuario = $1, nome_completo = $2, email = $3, senha = $4, id_perfil = $5 WHERE id_usuario = $6 RETURNING *",
-    [codigo_usuario, nome_completo, email, hashedPassword, id_perfil, id]
+    "UPDATE Usuario SET codigo_usuario = $1, nome_completo = $2, email = $3, id_perfil = $4 WHERE id_usuario = $5 RETURNING *",
+    [codigo_usuario, nome_completo, email, id_perfil, id]
   );
   return rows[0];
 };

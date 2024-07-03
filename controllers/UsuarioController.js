@@ -53,13 +53,12 @@ const addUsuario = async (req, res) => {
 
 const editUsuario = async (req, res) => {
   try {
-    const { codigo_usuario, nome_completo, email, senha, id_perfil } = req.body;
+    const { codigo_usuario, nome_completo, email, id_perfil } = req.body;
     const updatedUsuario = await updateUsuario(
       req.params.id,
       codigo_usuario,
       nome_completo,
       email,
-      senha,
       id_perfil
     );
     res.status(200).json(updatedUsuario);
@@ -112,7 +111,7 @@ const loginUser = async (req, res) => {
       { expiresIn: 3600 },
       (err, token) => {
         if (err) throw err;
-        res.json({ token });
+        res.json({ token, userId: user.id_usuario });
       }
     );
   } catch (error) {
